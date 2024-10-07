@@ -1,0 +1,189 @@
+import wixData from 'wix-data';
+
+const greenBoxImage = "wix:image://v1/696d79_ef9a70119b0144a4830fe935e21c2a27~mv2.png/green%20box.png#originWidth=370&originHeight=344";
+const yellowBoxImage = "wix:image://v1/696d79_a71e0f9af0a54915b1f3640cc6290b4d~mv2.png/yellow%20box.png#originWidth=346&originHeight=344";
+const redBoxImage = "wix:image://v1/696d79_48b12bcefce94e1abe9edc5741e43e27~mv2.png/red%20box.png#originWidth=350&originHeight=344";
+const professorImage = "wix:image://v1/696d79_04c2d55b35af44cdbc33930343de9f9b~mv2.jpg/solidwhite.jpg#originWidth=474&originHeight=491";
+
+function getColorBox(rating) {
+    if (rating >= 4) {
+        return greenBoxImage;
+    } else if (rating == 3) {
+        return yellowBoxImage;
+    } else {
+        return redBoxImage;
+    }
+}
+
+// If professor page already created, factor in new rating to find new overall
+function calculateNewOverallRating(currentRating, currentCount, newRating) {
+    let newOverallRating = ((currentRating * currentCount) + newRating) / (currentCount + 1);
+    return Math.round(newOverallRating);
+}
+
+export async function processSubmission(formData) {
+    console.log("Received form data in backend:", formData);
+    let { professorname, overallrating, className, attendancePolicy, difficultyLevel, wouldTakeAgain, comments, reviewerName, reviewerMajor, reviewerPhoneNumber } = formData;
+
+    if (typeof overallrating === "undefined" || isNaN(overallrating)) {
+        console.error("Error: overallRating is undefined or not a number");
+        return;  // Stop the function if there's an issue with overallRating
+    }
+
+    professorname = professorname.trim(); // Prevent whitespace errors
+
+    let formattedDifficultyLevel = `Difficulty: ${difficultyLevel}`;
+    let formattedAttendancePolicy = `Attendance: ${attendancePolicy}`;
+    let formattedWouldTakeAgain = `Would Take Again: ${wouldTakeAgain}`;
+
+    let submissionDate = new Date(); // Gives the current date and time
+
+    let formattedDate = submissionDate.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    }); // Proper format = Month Date, Year
+
+    let newReview = {
+        date: formattedDate,
+        className,
+        rating: overallrating.toFixed(1),  // Format the rating as '5.0'
+        ratingColor: getColorBox(overallrating),
+        attendance: formattedAttendancePolicy,
+        difficulty: formattedDifficultyLevel,
+        wouldTakeAgain: formattedWouldTakeAgain,
+        comments,
+        reviewerName,
+        reviewerMajor,
+        reviewerPhoneNumber
+    };
+
+    let collectionName;
+    let professorFound = false;
+
+    try {
+        // Check each collection for existing professor 
+        // CHANGE THIS BACK TO 10 LATER
+        for (let i = 1; i <= 5; i++) { 
+            collectionName = `Professor${i}Ratings`;
+            console.log(`Checking collection: ${collectionName}`);  // Debug log for collection being checked
+            
+            let results = await wixData.query(collectionName)
+                .eq("professorname", professorname)
+                .find();
+            
+            console.log(`Query results for ${collectionName}:`, results);
+
+            if (results.items.length > 0) {
+                console.log("Professor found in:", collectionName);  // Debug log when professor is found
+                professorFound = true;
+                let professor = results.items[0];
+                let reviews = [];
+
+                console.log("Professor values found:", results.items[0]);
+
+                for (let j = 1; j <= i; j++) {
+                    // Fetch existing review info
+                    let review = {
+                        date: professor[`${j}Date`],
+                        className: professor[`${j}Class`],  
+                        rating: professor[`${j}Rating`],
+                        ratingColor: professor[`${j}Ratingcolor`],
+                        attendance: professor[`${j}Attendance`],
+                        wouldTakeAgain: professor[`${j}Wouldtakeagain`],
+                        difficulty: professor[`${j}Difficulty`],
+                        comments: professor[`${j}Comments`],
+                        reviewerName: professor[`${j}Reviewer`],
+                        reviewerMajor: professor[`${j}Major`],
+                        reviewerPhoneNumber: professor[`${j}Phone`]
+                    };
+                    reviews.push(review);
+                }
+
+                reviews.unshift(newReview); // Put most recent review in front
+
+                let newOverallRating = calculateNewOverallRating(professor.overallrating, i, overallrating);
+
+                let newCount = i + 1; // Move to the next collection
+                let nextCollectionName = `Professor${newCount}Ratings`;
+
+                // Add new review to the next collection, including the submission date
+                console.log(`Inserting into ${nextCollectionName}`);  // Debug log for inserting
+                await wixData.insert(nextCollectionName, {
+                    // Transfer all data to new collection
+                    title: professorname,
+                    professorname: professorname,
+                    overallrating: newOverallRating,  // Set the new overall rating
+                    overallratingcolor: getColorBox(newOverallRating),  // Update overall rating color
+                    ratemyprofessorlink: professor.ratemyprofessorlink || " ",  // Move RateMyProfessor link
+                    professorimage: professor.professorimage || professorImage,  // Move professor image
+                    subject: professor.subject || " ",  // Move subject
+
+                    // Include all reviews
+                    ...reviews.reduce((obj, review, index) => {
+                        obj[`${index + 1}Date`] = review.date || formattedDate;
+                        obj[`${index + 1}Class`] = review.className;
+                        obj[`${index + 1}Rating`] = review.rating;
+                        obj[`${index + 1}Ratingcolor`] = review.ratingColor;
+                        obj[`${index + 1}Attendance`] = review.attendance;
+                        obj[`${index + 1}Wouldtakeagain`] = review.wouldTakeAgain;
+                        obj[`${index + 1}Difficulty`] = review.difficulty;
+                        obj[`${index + 1}Comments`] = review.comments;
+                        obj[`${index + 1}Reviewer`] = review.reviewerName;
+                        obj[`${index + 1}Major`] = review.reviewerMajor;
+                        obj[`${index + 1}Phone`] = review.reviewerPhoneNumber;
+                        return obj;
+                    }, {})
+                })
+                .then((result) => {
+                    console.log("Insert successful:", result);
+                })
+                .catch((error) => {
+                    console.error("Insert error:", error);
+                });
+
+                // Remove the professor from the current collection
+                await wixData.remove(collectionName, professor._id); 
+                break;
+            }
+        }
+
+        // If professor was not found, add them to the 1-review collection
+        if (!professorFound) {
+            collectionName = `Professor1Ratings`;
+            let rating = overallrating.toFixed(1);
+            let ratingColor = getColorBox(rating);
+
+            console.log("Professor not found, inserting into Professor1Ratings");  // Debug log before insert
+
+            await wixData.insert(collectionName, {
+                title: professorname,
+                professorname: professorname,
+                overallrating: overallrating,
+                overallratingcolor: ratingColor,
+                ratemyprofessorlink: "",  // Set default link if new
+                professorimage: professorImage,  // Set default image if new
+                subject: "",  // Set default subject if new
+                "1Rating": rating,
+                "1Ratingcolor": ratingColor,
+                "1Date": formattedDate,
+                "1Class": className,
+                "1Attendance": formattedAttendancePolicy,
+                "1Difficulty": formattedDifficultyLevel,
+                "1Wouldtakeagain": formattedWouldTakeAgain,
+                "1Comments": comments,
+                "1Reviewer": reviewerName,
+                "1Major": reviewerMajor,
+                "1Phone": reviewerPhoneNumber
+                })
+            .then((result) => {
+                console.log("Insert successful into Professor1Ratings:", result);
+            })
+            .catch((error) => {
+                console.error("Insert error into Professor1Ratings:", error);
+            });
+        }
+    } catch (error) {
+        console.error("Error processing submission:", error);
+    }
+}
