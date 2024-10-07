@@ -49,7 +49,11 @@ Check out the live site: [RatePsiProfessor Live Site](https://mtbarnett6.wixsite
 ![image](https://github.com/user-attachments/assets/dbfd3398-5f57-400a-be78-600157dd9ff0)
 
 ## Project Structure
-- 
+
+### Understanding `.jsw` Files
+The `src/backend/` folder contains `.jsw` files, which are Wix-specific **Web Modules**. These files are used in Wix to define server-side functions that can be securely called from the frontend. They serve as a bridge between the frontend and backend, allowing certain operations (e.g., database queries and secure computations) to be handled on the server side.
+
+In this repository, the `.jsw` files are preserved to maintain the original structure of the Wix project. If you’re not using Wix, consider these as standard `.js` files but note that some functions and syntax may not be compatible outside of Wix.
 
 ## Future Enhancements
 Some planned features and improvements for RatePsiProfessor include:
