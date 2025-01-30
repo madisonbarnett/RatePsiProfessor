@@ -1,9 +1,12 @@
 import wixData from 'wix-data';
+import { mediaManager } from 'wix-media-backend';
+import {getProfessorImage} from 'backend/professorImages.js';
 
 const greenBoxImage = "wix:image://v1/696d79_ef9a70119b0144a4830fe935e21c2a27~mv2.png/green%20box.png#originWidth=370&originHeight=344";
 const yellowBoxImage = "wix:image://v1/696d79_a71e0f9af0a54915b1f3640cc6290b4d~mv2.png/yellow%20box.png#originWidth=346&originHeight=344";
 const redBoxImage = "wix:image://v1/696d79_48b12bcefce94e1abe9edc5741e43e27~mv2.png/red%20box.png#originWidth=350&originHeight=344";
 const professorImage = "wix:image://v1/696d79_04c2d55b35af44cdbc33930343de9f9b~mv2.jpg/solidwhite.jpg#originWidth=474&originHeight=491";
+const generalRMPLink = "https://www.ratemyprofessors.com/school/1058";
 
 function getColorBox(rating) {
     if (rating >= 4) {
@@ -13,6 +16,212 @@ function getColorBox(rating) {
     } else {
         return redBoxImage;
     }
+}
+
+// Determine subject for new professors
+function getProfessorSubject(classCode) {
+    const classSubjects = {
+        "AAST": "African American Studies",
+        "AMS": "American Studies",
+        "AC": "Accounting",
+        "AEL": "Educational Leadership",
+        "AEM": "Aerospace Engineering",
+        "AFS": "Air Force Studies",
+        "AHE": "Higher Education",
+        "AIL": "Instructional Leadership",
+        "ALA": "Liberal Arts and Sciences",
+        "ANT": "Anthropology",
+        "APR": "Advertising and PR",
+        "ARB": "Arabic",
+        "ARH": "Art History",
+        "ART": "Art",
+        "AS": "Arts and Sciences",
+        "ASL": "American Sign Language",
+        "ATR": "Athletic Training",
+        "AY": "Astronomy",
+        "BA": "Book Arts",
+        "BCE": "Counselor Education",
+        "BEF": "Educational Foundations",
+        "BEP": "Educational Psychology",
+        "BER": "Educational Research",
+        "BSC": "Biological Sciences",
+        "BSP": "School Psychology",
+        "BUI": "Blount Scholars Program",
+        "CAT": "Educational Computer Technology",
+        "CC": "Cyber Criminology",
+        "CD": "Communicative Disorders",
+        "CE": "Civil Engineering",
+        "CEE": "Elementary Education",
+        "CH": "Chemistry",
+        "CHE": "Chemical Engineering",
+        "CHI": "Chinese",
+        "CHS": "Community Health Sciences",
+        "CIE": "Curriculum & Instruction",
+        "CIS": "Communication Information Sciences",
+        "CJ": "Criminal Justice",
+        "CL": "Classics",
+        "COM": "Communication Studies",
+        "CRD": "Reading Education",
+        "CRL": "Critical Languages",
+        "CS": "Computer Science",
+        "CSE": "Secondary Education",
+        "CSM": "Consumer Sciences",
+        "CTD": "Design",
+        "DN": "Dance",
+        "DNCA": "Dance Academics",
+        "EC": "Economics",
+        "ECE": "Electrical Engineering",
+        "EDU": "Education Orientation",
+        "ELC": "English Language Communication",
+        "EN": "English",
+        "ENGR": "Engineering",
+        "EPIC": "Engineering",
+        "FA": "Fine Arts",
+        "FI": "Finance",
+        "FR": "French",
+        "GBA": "Business Administration",
+        "GEO": "Geological Science",
+        "GES": "General Engineering",
+        "GN": "German",
+        "GR": "Greek",
+        "GS": "General Studies",
+        "GY": "Geography",
+        "HCAN": "Healthcare Analytics",
+        "HD": "Human Development",
+        "HEB": "Hebrew",
+        "HES": "Human Environmental Sciences",
+        "HHE": "Health Education",
+        "HSM": "Hospitality & Sport Management",
+        "HY": "History",
+        "IBA": "International Business",
+        "IDGR": "Interdisciplinary Studies",
+        "IDMD": "Interdisciplinary Studies",
+        "INTE": "Instructional Technology",
+        "IS": "Information Sciences",
+        "IT": "Italian",
+        "JA": "Japanese",
+        "JCM": "Journalism & Creative Media",
+        "KIN": "Kinesiology",
+        "KOR": "Korean",
+        "LA": "Latin",
+        "LAS": "Latin Studies",
+        "LAW": "Law",
+        "LGS": "Legal Studies",
+        "LS": "Library Sciences",
+        "MAP": "Multiple Abilities",
+        "MATH": "Mathematics",
+        "MC": "Mass Communication",
+        "MDGR": "Modern Greek",
+        "ME": "Mechanical Engineering",
+        "MFE": "Manufacturing Engineering",
+        "MGT": "Management",
+        "MIL": "Military Science",
+        "MIS": "Management Information Systems",
+        "MKT": "Marketing",
+        "MLC": "Modern Language & Classics",
+        "MS": "Marine Science",
+        "MSC": "Miscellaneous",
+        "MTE": "Metallurgical Engineering",
+        "MUA": "Applied Music",
+        "MUE": "Music Education",
+        "MUS": "Music Academics",
+        "MUSM": "Museum Studies",
+        "NCLT": "New College",
+        "NEW": "New College",
+        "NHM": "Nutrition and Hospitality",
+        "NSE": "National Student Exchange",
+        "NUR": "Nursing",
+        "NUS": "Nursing Science",
+        "OM": "Operations Management",
+        "PH": "Physics",
+        "PHL": "Philosophy",
+        "POPH": "Population Health",
+        "POR": "Portuguese",
+        "PSC": "Political Science",
+        "PY": "Psychology",
+        "RCH": "Community Health",
+        "REL": "Religious Studies",
+        "RL": "Romance Languages",
+        "RUS": "Russian",
+        "SOC": "Sociology",
+        "SP": "Spanish",
+        "SPE": "Special Education",
+        "ST": "Statistics",
+        "SW": "Social Work",
+        "TH": "Theatre",
+        "THAI": "Thai",
+        "THMT": "Musical Theatre",
+        "TURK": "Turkish",
+        "UH": "Honors",
+        "VIET": "Vietnamese",
+        "WS": "Women Studies"
+    };
+    return classSubjects[classCode] || ""; // Default to blank subject line if no match is found
+}
+
+// Format phone number input
+function formatPhoneNumber(phoneNumber) {
+    // Remove all non-numeric characters
+    const cleaned = phoneNumber.replace(/\D/g, '');
+
+    // Format the cleaned number into (XXX) XXX-XXXX
+    if (cleaned.length === 10) {
+        return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    } else {
+        return "";
+    }
+}
+
+// Format capitalization of names and majors
+function capitalizeName(name) {
+    return name
+        .toLowerCase() // Convert the name to lowercase first
+        .split(" ")    
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
+        .join(" ");    // Rejoin the words into a single string
+}
+
+// Format class input
+function formatClassInput(input) {
+    return input.replace(/([A-Za-z]+)(\d+)/, (letters, numbers) => {
+        return `${letters.toUpperCase()} ${numbers}`;
+    });
+}
+
+async function uploadImage(imageUrl, itemId) {
+    try {
+        // Uploads image as a Wix image
+        console.log("Starting image upload:", imageUrl);
+        const uploadResult = await mediaManager.importFile('/images', imageUrl, {
+            mediaOptions: { mediaType: "image" },
+            metadataOptions: {
+                context: { itemId: itemId || "defaultId" },
+            },
+        });
+
+        if (!uploadResult.fileName || !uploadResult.originalFileName) {
+            console.warn("Upload succeeded but required fields are missing:", uploadResult);
+            return null; // Return null as a fallback
+        }
+
+        // Replace spaces in original file name with '%20' to match Wix format
+        const originalFileName = uploadResult.originalFileName.replace(/ /g, "%20");
+
+        // Construct the Wix image format
+        const wixImageFormat = `wix:image://v1/${uploadResult.fileName}/${originalFileName}${'#originWidth=255&originHeight=255'}`;
+
+        console.log("Image uploaded successfully in Wix format:", wixImageFormat);
+        return wixImageFormat;
+    } catch (error) {
+        console.error("Error during image upload:", error);
+        return null; // Return null in case of an error
+    }
+}
+
+
+// Retrieve class code to determine subject
+function getSubjectCode(input) {
+    return input.split(" ")[0]; // Split on space and return the first part
 }
 
 // If professor page already created, factor in new rating to find new overall
@@ -30,11 +239,15 @@ export async function processSubmission(formData) {
         return;  // Stop the function if there's an issue with overallRating
     }
 
-    professorname = professorname.trim(); // Prevent whitespace errors
+    professorname = professorname.trim(); // Prevent whitespace errors 
+    let formattedName = capitalizeName(professorname);
 
     let formattedDifficultyLevel = `Difficulty: ${difficultyLevel}`;
     let formattedAttendancePolicy = `Attendance: ${attendancePolicy}`;
     let formattedWouldTakeAgain = `Would Take Again: ${wouldTakeAgain}`;
+    let formattedClass = formatClassInput(className);
+    let formattedPhone = formatPhoneNumber(reviewerPhoneNumber);
+    overallrating = Math.round(overallrating);
 
     let submissionDate = new Date(); // Gives the current date and time
 
@@ -46,135 +259,175 @@ export async function processSubmission(formData) {
 
     let newReview = {
         date: formattedDate,
-        className,
+        className: formattedClass,
         rating: overallrating.toFixed(1),  // Format the rating as '5.0'
         ratingColor: getColorBox(overallrating),
         attendance: formattedAttendancePolicy,
         difficulty: formattedDifficultyLevel,
         wouldTakeAgain: formattedWouldTakeAgain,
         comments,
-        reviewerName,
-        reviewerMajor,
-        reviewerPhoneNumber
+        reviewerName: capitalizeName(reviewerName),
+        reviewerMajor: capitalizeName(reviewerMajor),
+        reviewerPhoneNumber: formattedPhone
     };
 
     let collectionName;
     let professorFound = false;
 
-    try {
-        // Check each collection for existing professor 
-        // CHANGE THIS BACK TO 10 LATER
-        for (let i = 1; i <= 5; i++) { 
-            collectionName = `Professor${i}Ratings`;
-            console.log(`Checking collection: ${collectionName}`);  // Debug log for collection being checked
+
+    // Check each collection for existing professor 
+    for (let i = 1; i <= 10; i++) { 
+        collectionName = `Professor${i}Ratings`;
+        console.log(`Checking collection: ${collectionName}`);  // Debug log for collection being checked
             
-            let results = await wixData.query(collectionName)
-                .eq("professorname", professorname)
-                .find();
+        let results = await wixData.query(collectionName)
+            .hasSome("professorname", formattedName)
+            .find();
             
-            console.log(`Query results for ${collectionName}:`, results);
+        console.log(`Query results for ${collectionName}:`, results);
 
-            if (results.items.length > 0) {
-                console.log("Professor found in:", collectionName);  // Debug log when professor is found
-                professorFound = true;
-                let professor = results.items[0];
-                let reviews = [];
+        if (results.items.length > 0) {
+            console.log("Professor found in:", collectionName);  // Debug log when professor is found
+            professorFound = true;
+            let professor = results.items[0];
 
-                console.log("Professor values found:", results.items[0]);
+            // console.log("Results:", results.items[0]); //Test to view all info being retrieved
 
-                for (let j = 1; j <= i; j++) {
-                    // Fetch existing review info
-                    let review = {
-                        date: professor[`${j}Date`],
-                        className: professor[`${j}Class`],  
-                        rating: professor[`${j}Rating`],
-                        ratingColor: professor[`${j}Ratingcolor`],
-                        attendance: professor[`${j}Attendance`],
-                        wouldTakeAgain: professor[`${j}Wouldtakeagain`],
-                        difficulty: professor[`${j}Difficulty`],
-                        comments: professor[`${j}Comments`],
-                        reviewerName: professor[`${j}Reviewer`],
-                        reviewerMajor: professor[`${j}Major`],
-                        reviewerPhoneNumber: professor[`${j}Phone`]
-                    };
-                    reviews.push(review);
-                }
+            let professorId = professor._id;
+            let reviews = [];
 
-                reviews.unshift(newReview); // Put most recent review in front
+            console.log("Professor values found:", results.items[0]);
 
-                let newOverallRating = calculateNewOverallRating(professor.overallrating, i, overallrating);
-
-                let newCount = i + 1; // Move to the next collection
-                let nextCollectionName = `Professor${newCount}Ratings`;
-
-                // Add new review to the next collection, including the submission date
-                console.log(`Inserting into ${nextCollectionName}`);  // Debug log for inserting
-                await wixData.insert(nextCollectionName, {
-                    // Transfer all data to new collection
-                    title: professorname,
-                    professorname: professorname,
-                    overallrating: newOverallRating,  // Set the new overall rating
-                    overallratingcolor: getColorBox(newOverallRating),  // Update overall rating color
-                    ratemyprofessorlink: professor.ratemyprofessorlink || " ",  // Move RateMyProfessor link
-                    professorimage: professor.professorimage || professorImage,  // Move professor image
-                    subject: professor.subject || " ",  // Move subject
-
-                    // Include all reviews
-                    ...reviews.reduce((obj, review, index) => {
-                        obj[`${index + 1}Date`] = review.date || formattedDate;
-                        obj[`${index + 1}Class`] = review.className;
-                        obj[`${index + 1}Rating`] = review.rating;
-                        obj[`${index + 1}Ratingcolor`] = review.ratingColor;
-                        obj[`${index + 1}Attendance`] = review.attendance;
-                        obj[`${index + 1}Wouldtakeagain`] = review.wouldTakeAgain;
-                        obj[`${index + 1}Difficulty`] = review.difficulty;
-                        obj[`${index + 1}Comments`] = review.comments;
-                        obj[`${index + 1}Reviewer`] = review.reviewerName;
-                        obj[`${index + 1}Major`] = review.reviewerMajor;
-                        obj[`${index + 1}Phone`] = review.reviewerPhoneNumber;
-                        return obj;
-                    }, {})
-                })
-                .then((result) => {
-                    console.log("Insert successful:", result);
-                })
-                .catch((error) => {
-                    console.error("Insert error:", error);
-                });
-
-                // Remove the professor from the current collection
-                await wixData.remove(collectionName, professor._id); 
-                break;
+            for (let j = 1; j <= i; j++) {
+                // Fetch existing review info
+                let review = {
+                    date: professor[`${j}Date`],
+                    className: professor[`${j}Class`],  
+                    rating: professor[`${j}Rating`],
+                    ratingColor: professor[`${j}Ratingcolor`],
+                    attendance: professor[`${j}Attendance`],
+                    wouldTakeAgain: professor[`${j}Wouldtakeagain`],
+                    difficulty: professor[`${j}Difficulty`],
+                    comments: professor[`${j}Comments`],
+                    reviewerName: professor[`${j}Reviewer`],
+                    reviewerMajor: professor[`${j}Major`],
+                    reviewerPhoneNumber: professor[`${j}Phone`]
+                };
+                reviews.push(review);
             }
+
+            reviews.unshift(newReview); // Put most recent review in front
+
+            // If professor exceeds 10 reviews, delete oldest submission
+            if (reviews.length > 10) { 
+                reviews.pop();
+            }
+
+            let newOverallRating = calculateNewOverallRating(professor.overallrating, i, overallrating);
+
+            let newCount = i + 1; // Move to the next collection
+            let nextCollectionName = `Professor${newCount}Ratings`;
+
+            // Add new review to the next collection, including the submission date
+            console.log(`Inserting into ${nextCollectionName}`);  // Debug log for inserting
+            await wixData.insert(nextCollectionName, {
+                // Transfer all data to new collection
+                title: professor.professorname,
+                professorname: professor.professorname,
+                overallrating: newOverallRating,  // Set the new overall rating
+                overallratingcolor: getColorBox(newOverallRating),  // Update overall rating color
+                ratemyprofessorlink: professor.ratemyprofessorlink || " ",  // Move RateMyProfessor link
+                professorimage: professor.professorimage || professorImage,  // Move professor image
+                subject: professor.subject || " ",  // Move subject
+
+                // Include all reviews
+                ...reviews.reduce((obj, review, index) => {
+                    obj[`${index + 1}Date`] = review.date || formattedDate;
+                    obj[`${index + 1}Class`] = review.className;
+                    obj[`${index + 1}Rating`] = review.rating;
+                    obj[`${index + 1}Ratingcolor`] = review.ratingColor;
+                    obj[`${index + 1}Attendance`] = review.attendance;
+                    obj[`${index + 1}Wouldtakeagain`] = review.wouldTakeAgain;
+                    obj[`${index + 1}Difficulty`] = review.difficulty;
+                    obj[`${index + 1}Comments`] = review.comments;
+                    obj[`${index + 1}Reviewer`] = review.reviewerName;
+                    obj[`${index + 1}Major`] = review.reviewerMajor;
+                    obj[`${index + 1}Phone`] = review.reviewerPhoneNumber;
+                    return obj;
+                }, {})
+            })
+            .then((result) => {
+                console.log("Insert successful:", result);
+            })
+            .catch((error) => {
+                console.error("Insert error:", error);
+            });
+
+            // Remove the professor from the current collection
+            await wixData.remove(collectionName, professorId);
+            break;
         }
+    }
+
+        let classCode = getSubjectCode(formattedClass);
 
         // If professor was not found, add them to the 1-review collection
         if (!professorFound) {
             collectionName = `Professor1Ratings`;
             let rating = overallrating.toFixed(1);
             let ratingColor = getColorBox(rating);
+            let profSubject = getProfessorSubject(classCode);
+            let uploadedImage = professorImage;
+            // Check if image exists in data from scrapped directories
+            let databaseImage = await getProfessorImage(formattedName);
+            if (databaseImage == null) {
+                uploadedImage = professorImage;
+            }
+            else if (databaseImage == "wix:image://v1/696d79_04c2d55b35af44cdbc33930343de9f9b~mv2.jpg/solidwhite.jpg#originWidth=474&originHeight=491") {
+                uploadedImage = professorImage;
+            }
+            else {
+                // Upload the image if it's not already valid
+                try {
+                    const uploadResult = await uploadImage(databaseImage, professorname);
+
+                    if (uploadResult) {
+                        // Directly use the constructed Wix image format from the upload result
+                        uploadedImage = uploadResult; 
+                        console.log("Uploaded image:", uploadedImage);
+                    } else {
+                        console.warn("Upload failed or returned null:", uploadResult);
+                        uploadedImage = professorImage; // Fallback to default image
+                    }
+                } catch (uploadError) {
+                    console.error("Error uploading image:", uploadError);
+                    uploadedImage = professorImage; // Fallback to default image
+                }
+            }
+        
+            
 
             console.log("Professor not found, inserting into Professor1Ratings");  // Debug log before insert
 
             await wixData.insert(collectionName, {
-                title: professorname,
-                professorname: professorname,
+                title: capitalizeName(professorname),
+                professorname: capitalizeName(professorname),
                 overallrating: overallrating,
                 overallratingcolor: ratingColor,
-                ratemyprofessorlink: "",  // Set default link if new
-                professorimage: professorImage,  // Set default image if new
-                subject: "",  // Set default subject if new
+                ratemyprofessorlink: generalRMPLink,  // Set default link if new
+                professorimage: uploadedImage,  
+                subject: profSubject,  // Determine subject with function if new
                 "1Rating": rating,
                 "1Ratingcolor": ratingColor,
                 "1Date": formattedDate,
-                "1Class": className,
+                "1Class": formattedClass,
                 "1Attendance": formattedAttendancePolicy,
                 "1Difficulty": formattedDifficultyLevel,
                 "1Wouldtakeagain": formattedWouldTakeAgain,
                 "1Comments": comments,
-                "1Reviewer": reviewerName,
-                "1Major": reviewerMajor,
-                "1Phone": reviewerPhoneNumber
+                "1Reviewer": capitalizeName(reviewerName),
+                "1Major": capitalizeName(reviewerMajor),
+                "1Phone": formatPhoneNumber(reviewerPhoneNumber)
                 })
             .then((result) => {
                 console.log("Insert successful into Professor1Ratings:", result);
@@ -183,7 +436,4 @@ export async function processSubmission(formData) {
                 console.error("Insert error into Professor1Ratings:", error);
             });
         }
-    } catch (error) {
-        console.error("Error processing submission:", error);
-    }
 }
