@@ -34,18 +34,17 @@ $w.onReady(function () {
     $w("#repeater1").collapse(); //Don't show repeater while no letter is selected
 
     // Load data from all collections using the helper function
-    // CMS Collections 6 - 10 not converted yet to use proper IDs, so leave out of code to prevent error
     Promise.all([
         loadAllItems("Professor1Ratings"),
         loadAllItems("Professor2Ratings"),
         loadAllItems("Professor3Ratings"),
         loadAllItems("Professor4Ratings"),
-        loadAllItems("Professor5Ratings")//,
-        //loadAllItems("Professor6Ratings"),
-        //loadAllItems("Professor7Ratings"),
-        //loadAllItems("Professor8Ratings"),
-        //loadAllItems("Professor9Ratings"),
-        //loadAllItems("Professor10Ratings")
+        loadAllItems("Professor5Ratings"),
+        loadAllItems("Professor6Ratings"),
+        loadAllItems("Professor7Ratings"),
+        loadAllItems("Professor8Ratings"),
+        loadAllItems("Professor9Ratings"),
+        loadAllItems("Professor10Ratings")
     ])
     .then((results) => {
         // Combine all items from each query result into a single array
