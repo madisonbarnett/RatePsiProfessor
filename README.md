@@ -29,8 +29,8 @@ Check out the live site: [RatePsiProfessor Live Site](https://mtbarnett6.wixsite
 ## Technologies Used
 - **Wix CMS**: For managing professor data and user submissions.
 - **Wix Velo**: Custom JavaScript code for automating data management and enhancing functionality.
-- **HTML/CSS**: For custom styling and UI design.
 - **JavaScript**: For additional interactivity and dynamic updates.
+- **Python Web Scraping**: To create database of professor images to automatically populate image field
 
 ## Usage
 1. **User Submissions**: Users can submit reviews by filling out the review form on the site. Submitted reviews will be dynamically added to the appropriate professor's profile.
@@ -56,6 +56,7 @@ RatePsiProfessor/
 ├── src/                      # Source files for the Wix Velo code
 │   ├── backend/              # Backend code and logic
 │   │   ├── dataMovement.jsw          # Backend web module for secure data operations
+|   |   ├── professors.js     # Holds dictionary of 4400+ professor images and function to return image
 │   └── pages/                # Frontend page-specific code
 │       ├── homePage.js       # Code for homepage interactions with dropdown box
 │       └── submissionForm.js  # Code for submission form to retrieve and transfer data
@@ -73,4 +74,4 @@ Some planned features and improvements for RatePsiProfessor include:
 
 - 📱 **Mobile Optimization**: Enhance the mobile UI for a seamless user experience.
 - 🔐 **Automated Spell Check**: Prevent duplicate professor pages caused by minor typos or inconsistent spellings in submissions by implementing a custom-coded spell-check feature
-- 📊 **Automated Professor Profile Enrichment**: Automatically populate new professor pages with relevant information such as subject, RateMyProfessor link, and headshot
+- ✅ **Automated Professor Profile Enrichment**: Automatically populate new professor pages with relevant information such as subject, RateMyProfessor link, and headshot
